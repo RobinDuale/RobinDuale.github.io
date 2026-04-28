@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Générateur de devis</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .navy { background-color: #1B3A6B; }
+    .text-navy { color: #1B3A6B; }
+    .border-navy { border-color: #1B3A6B; }
+    @media print {
+      #form-panel, #historique-section, .no-print { display: none !important; }
+      body { background: white !important; padding: 0 !important; }
+      #devis { box-shadow: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+  <div class="max-w-5xl mx-auto mb-4 no-print">
+    <a href="/" class="text-sm text-blue-800 hover:underline">← Retour aux projets</a>
+  </div>
+
+  <div class="max-w-5xl mx-auto flex flex-col lg:flex-row gap-6 items-start">
+    <div id="form-panel" class="bg-white shadow rounded-lg p-6 w-full lg:w-72 shrink-0">
+      <h2 class="text-base font-semibold text-gray-800 mb-4">Paramètres du devis</h2>
+      <div class="space-y-3">
+        <div><label class="block text-xs font-medium text-gray-600 mb-1">Nom du client</label><input id="client" type="text" placeholder="Andrea Sanchez" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+        <div><label class="block text-xs font-medium text-gray-600 mb-1">Email client</label><input id="email" type="text" placeholder="hello@client.com" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+        <div><label class="block text-xs font-medium text-gray-600 mb-1">Adresse client</label><input id="adresse" type="text" placeholder="123 Rue Exemple, Paris" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+        <div><label class="block text-xs font-medium text-gray-600 mb-1">Type de prestation</label><select id="prestation" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"><option value="Consulting">Consulting</option><option value="Formation">Formation</option><option value="Développement">Développement</option></select></div>
+        <div><label class="block text-xs font-medium text-gray-600 mb-1">Nombre de jours</label><input id="jours" type="number" min="1" placeholder="5" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+        <div><label class="block text-xs font-medium text-gray-600 mb-1">TJM (€)</label><input id="tjm" type="number" min="0" placeholder="800" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+        <div><label class="block text-xs font-medium text-gray-600 mb-1">Conditions de paiement</label><select id="conditions" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"><option value="Comptant">Comptant</option><option value="30 jours">30 jours</option><option value="60 jours">60 jours</option></select></div>
+        <div><label class="block text-xs font-medium text-gray-600 mb-1">Délai de livraison</label><input id="livraison" type="date" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" /></div>
+        <button onclick="genererDevis()" class="w-full bg-blue-800 hover:bg-blue-900 text-white font-medium text-sm py-2 px-4 rounded transition-colors mt-2">Générer le devis</button>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-6 w-full">
+      <div id="devis" class="hidden bg-white shadow-lg rounded-lg overflow-hidden w-full">
+        <div class="flex">
+          <div class="flex-1 flex items-center px-8 py-6"><div class="flex items-center gap-3"><div class="w-10 h-10 navy rotate-45 rounded-sm shrink-0"></div><span class="text-xl font-bold text-navy tracking-wide">Logo</span></div></div>
+          <div class="navy px-10 py-6 text-right min-w-48"><div class="text-white text-2xl font-bold tracking-widest mb-2">DEVIS</div><div class="text-blue-200 text-sm">N° <span id="out-numero"></span></div><div class="text-blue-200 text-sm">Date : <span id="out-date"></span></div></div>
+        </div>
+        <div class="px-8 py-6">
+          <div class="mb-8"><div class="text-navy font-bold text-sm mb-1">Client</div><div id="out-client" class="text-gray-700 text-sm font-medium"></div><div id="out-email" class="text-gray-500 text-sm"></div><div id="out-adresse" class="text-gray-500 text-sm"></div></div>
+          <table class="w-full text-sm mb-8"><thead><tr class="navy text-white"><th class="text-left px-4 py-3 font-semibold rounded-tl">Description</th><th class="text-center px-4 py-3 font-semibold">Tarif / jour</th><th class="text-center px-4 py-3 font-semibold">Nb jours</th><th class="text-right px-4 py-3 font-semibold rounded-tr">Montant</th></tr></thead><tbody><tr class="border-b border-blue-100"><td id="out-prestation" class="px-4 py-4 text-gray-700"></td><td id="out-tjm" class="px-4 py-4 text-center text-gray-700"></td><td id="out-jours" class="px-4 py-4 text-center text-gray-700"></td><td id="out-ht" class="px-4 py-4 text-right text-gray-800 font-medium"></td></tr><tr class="border-b border-blue-100"><td class="px-4 py-4" colspan="4">&nbsp;</td></tr><tr class="border-b border-blue-100"><td class="px-4 py-4" colspan="4">&nbsp;</td></tr></tbody></table>
+          <div class="flex justify-between items-start"><div class="text-sm text-gray-600 space-y-1"><div>Conditions de paiement : <span id="out-conditions" class="font-medium"></span></div><div>Délai de livraison : <span id="out-livraison" class="font-medium"></span></div></div><div class="text-sm space-y-1 text-right min-w-48"><div class="flex justify-between gap-8 text-navy font-medium"><span>Sous total</span><span id="out-total-ht"></span></div><div class="flex justify-between gap-8 text-navy font-medium"><span>Taux TVA</span><span>20%</span></div><div class="flex justify-between gap-8 text-navy font-bold text-base border-t border-navy pt-1 mt-1"><span>Total</span><span id="out-total-ttc"></span></div></div></div>
+          <div class="mt-10 text-right text-xs text-gray-400 italic">Signature suivie de la mention<br />"Lu et approuvé, bon pour accord"</div>
+          <div class="text-center mt-6 mb-4"><span class="text-navy text-xl" style="font-family: Georgia, serif; font-style: italic;">Merci pour votre confiance !</span></div>
+        </div>
+        <div class="navy flex justify-between items-center px-8 py-3 text-blue-200 text-xs"><span>+33 1 23 45 67 89</span><span>hello@votreentreprise.fr</span><span>votreentreprise.fr</span></div>
+        <div class="no-print flex gap-3 px-8 py-4 bg-gray-50 border-t border-gray-200"><button id="print-btn" onclick="imprimerDevis()" class="navy hover:opacity-90 text-white font-medium text-sm py-2 px-5 rounded transition-opacity">Télécharger PDF</button><button onclick="window.print()" class="border border-gray-400 hover:bg-gray-100 text-gray-700 font-medium text-sm py-2 px-5 rounded transition-colors">Imprimer</button><button id="reset-btn" onclick="reinitialiser()" class="border border-gray-300 hover:bg-gray-100 text-gray-500 font-medium text-sm py-2 px-5 rounded transition-colors ml-auto">Nouveau devis</button></div>
+      </div>
+
+      <div id="historique-section" class="hidden bg-white shadow rounded-lg overflow-hidden w-full"><div class="flex items-center justify-between px-6 py-4 border-b border-gray-200"><h3 class="text-sm font-semibold text-gray-800">Historique des devis</h3><button onclick="effacerHistorique()" class="text-xs text-red-400 hover:text-red-600 transition-colors">Effacer tout</button></div><table class="w-full text-sm"><thead class="bg-gray-50 text-gray-500 text-xs uppercase"><tr><th class="text-left px-6 py-3 font-medium">Numéro</th><th class="text-left px-6 py-3 font-medium">Client</th><th class="text-left px-6 py-3 font-medium">Date</th><th class="text-right px-6 py-3 font-medium">Montant TTC</th><th class="px-6 py-3"></th></tr></thead><tbody id="historique-body"></tbody></table></div>
+    </div>
+  </div>
+
+  <script>
+    function dateCle(){const d=new Date();return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;}
+    function prochainNumero(){const cle=dateCle();const c=JSON.parse(localStorage.getItem('devis_compteurs')||'{}');const n=(c[cle]||0)+1;c[cle]=n;localStorage.setItem('devis_compteurs',JSON.stringify(c));return `${cle}-${String(n).padStart(3,'0')}`;}
+    function dateAujourdhui(){const d=new Date();return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;}
+    function formaterDate(iso){if(!iso)return '-';const [y,m,j]=iso.split('-');return `${j}/${m}/${y}`;}
+    function formaterEuros(n){return n.toLocaleString('fr-FR',{minimumFractionDigits:0,maximumFractionDigits:0})+'\u202f€';}
+    function chargerHistorique(){return JSON.parse(localStorage.getItem('devis_historique')||'[]');}
+    function sauvegarderEntree(entree){const hist=chargerHistorique();hist.unshift(entree);localStorage.setItem('devis_historique',JSON.stringify(hist));}
+    function afficherHistorique(){const hist=chargerHistorique();const section=document.getElementById('historique-section');const tbody=document.getElementById('historique-body');if(hist.length===0){section.classList.add('hidden');return;}section.classList.remove('hidden');tbody.innerHTML=hist.map((e,i)=>`<tr class="border-t border-gray-100 hover:bg-gray-50"><td class="px-6 py-3 font-mono text-xs text-navy font-semibold">${e.numero}</td><td class="px-6 py-3 text-gray-700">${e.client}</td><td class="px-6 py-3 text-gray-500">${e.date}</td><td class="px-6 py-3 text-right font-medium text-gray-800">${e.montantTTC}</td><td class="px-6 py-3 text-right"><button onclick="dupliquer(${i})" class="text-xs text-blue-700 hover:text-blue-900 border border-blue-200 hover:border-blue-400 rounded px-2 py-1 transition-colors">Dupliquer</button></td></tr>`).join('');}
+    function effacerHistorique(){if(!confirm('Effacer tout l\'historique ?'))return;localStorage.removeItem('devis_historique');afficherHistorique();}
+    function dupliquer(index){const e=chargerHistorique()[index];document.getElementById('client').value=e._client||'';document.getElementById('email').value=e._email||'';document.getElementById('adresse').value=e._adresse||'';document.getElementById('jours').value=e._jours||'';document.getElementById('tjm').value=e._tjm||'';document.getElementById('conditions').value=e._conditions||'Comptant';document.getElementById('livraison').value=e._livraison||'';document.getElementById('prestation').value=e._prestation||'Consulting';document.getElementById('form-panel').scrollIntoView({behavior:'smooth'});}
+    function genererDevis(){const client=document.getElementById('client').value.trim();const email=document.getElementById('email').value.trim();const adresse=document.getElementById('adresse').value.trim();const prest=document.getElementById('prestation').value;const jours=parseFloat(document.getElementById('jours').value);const tjm=parseFloat(document.getElementById('tjm').value);const conditions=document.getElementById('conditions').value;const livraison=document.getElementById('livraison').value;if(!client){alert('Veuillez saisir le nom du client.');return;}if(!jours||jours<=0){alert('Nombre de jours invalide.');return;}if(!tjm||tjm<=0){alert('TJM invalide.');return;}const ht=jours*tjm;const ttc=ht*1.2;const numero=prochainNumero();const date=dateAujourdhui();document.getElementById('out-numero').textContent=numero;document.getElementById('out-date').textContent=date;document.getElementById('out-client').textContent=client;document.getElementById('out-email').textContent=email;document.getElementById('out-adresse').textContent=adresse;document.getElementById('out-prestation').textContent=prest;document.getElementById('out-tjm').textContent=formaterEuros(tjm);document.getElementById('out-jours').textContent=jours;document.getElementById('out-ht').textContent=formaterEuros(ht);document.getElementById('out-total-ht').textContent=formaterEuros(ht);document.getElementById('out-total-ttc').textContent=formaterEuros(ttc);document.getElementById('out-conditions').textContent=conditions;document.getElementById('out-livraison').textContent=formaterDate(livraison);sauvegarderEntree({numero,client,date,montantTTC:formaterEuros(ttc),_client:client,_email:email,_adresse:adresse,_prestation:prest,_jours:jours,_tjm:tjm,_conditions:conditions,_livraison:livraison});afficherHistorique();document.getElementById('devis').classList.remove('hidden');document.getElementById('devis').scrollIntoView({behavior:'smooth'});}
+    async function imprimerDevis(){const btn=document.getElementById('print-btn');btn.textContent='Génération en cours…';btn.disabled=true;const actionsDiv=btn.closest('div');actionsDiv.style.display='none';const zone=document.getElementById('devis');try{const canvas=await html2canvas(zone,{scale:2,useCORS:true,backgroundColor:'#ffffff'});const{jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});const pageW=210;const imgH=(canvas.height/canvas.width)*pageW;pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,0,pageW,imgH);const numero=document.getElementById('out-numero').textContent||'devis';pdf.save(`Devis-${numero}.pdf`);}catch(e){alert('Erreur lors de la génération du PDF.');}finally{actionsDiv.style.display='';btn.textContent='Télécharger PDF';btn.disabled=false;}}
+    function reinitialiser(){['client','email','adresse','jours','tjm','livraison'].forEach(id=>document.getElementById(id).value='');document.getElementById('prestation').selectedIndex=0;document.getElementById('conditions').selectedIndex=0;document.getElementById('devis').classList.add('hidden');}
+    afficherHistorique();
+  </script>
+</body>
+</html>
