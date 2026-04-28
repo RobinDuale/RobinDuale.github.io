@@ -1,21 +1,51 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Projets — Robin Dualé</title>
+  <title>Projets test - Duale</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex items-center justify-center p-8">
-  <div class="max-w-2xl w-full">
-    <h1 class="text-3xl font-bold text-gray-800 mb-2">Projets</h1>
-    <p class="text-gray-500 mb-8">Robin Dualé — outils et expérimentations</p>
-    <div class="grid gap-4">
-      <a href="/devis-generateur" class="block bg-white rounded-lg shadow p-5 hover:shadow-md transition-shadow border border-gray-100">
-        <div class="font-semibold text-gray-800 mb-1">Générateur de devis</div>
-        <div class="text-sm text-gray-500">Créez et exportez vos devis en PDF depuis le navigateur.</div>
+<body class="bg-slate-950 text-white min-h-screen">
+  <main class="max-w-5xl mx-auto px-6 py-12">
+    <header class="mb-10">
+      <p class="text-sm uppercase tracking-[0.3em] text-blue-300 mb-3">Duale Lab</p>
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Projets test</h1>
+      <p class="text-slate-300 max-w-2xl leading-relaxed">
+        Cette page sert de point d'entrée aux petits projets publiés pour apprendre, tester et itérer.
+        Chaque projet est rangé dans sa propre sous-arborescence.
+      </p>
+    </header>
+
+    <section class="grid gap-5 md:grid-cols-2">
+      <a href="/devis-generateur/" class="block rounded-2xl bg-white text-slate-950 p-6 shadow-xl hover:-translate-y-1 hover:shadow-2xl transition-all">
+        <div class="flex items-start justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-2xl font-bold mb-2">Générateur de devis</h2>
+            <p class="text-slate-600 leading-relaxed">
+              Créer un devis simple, calculer HT/TVA/TTC, générer un PDF et conserver un historique local.
+            </p>
+          </div>
+          <span class="shrink-0 rounded-full bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1">Actif</span>
+        </div>
+        <span class="inline-flex items-center text-blue-800 font-semibold">Ouvrir le projet →</span>
       </a>
-    </div>
-  </div>
-</body>
+
+      <div class="rounded-2xl border border-dashed border-slate-600 p-6 text-slate-400">
+        <h2 class="text-2xl font-bold text-slate-300 mb-2">Prochain projet</h2>
+        <p class="leading-relaxed">
+          Un futur outil pourra être ajouté ici avec une nouvelle carte et un nouveau dossier dédié.
+        </p>
+      </div>
+    </section>
+  </main>
+<div data-netlify-deploy-id="69f0b53cac17a20008f6b59e" data-netlify-site-id="658fda9d-3cb3-4be2-91b8-a73e02fee1d3" data-vcs="github" style="position:fixed">
+  
+  <script async src="/.netlify/scripts/cdp"></script>
+</div></body>
 </html>
